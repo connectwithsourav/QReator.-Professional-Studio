@@ -79,7 +79,7 @@ const App = () => {
                 </div>
 
                 {/* Canvas Area with Checkerboard for Transparency */}
-                <div className="relative w-full aspect-square bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-8 overflow-hidden group transition-colors duration-200">
+                <div className="relative w-full aspect-square bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-7 overflow-hidden group transition-colors duration-200">
                     {/* Checkerboard Pattern for Transparency */}
                     <div className="absolute inset-0 dark:opacity-20" 
                          style={{ 
@@ -90,12 +90,12 @@ const App = () => {
                     </div>
 
                     {/* QR Container */}
-                    <div className={`relative z-10 transition-all duration-300 ease-out transform group-hover:scale-[1.02] 
+                    <div className={`relative z-10 w-full max-w-[400px] aspect-square transition-all duration-300 ease-out transform group-hover:scale-[1.02] 
                         ${config.bgEnabled 
                             ? 'shadow-2xl shadow-slate-900/10' 
                             : 'drop-shadow-xl'}
                     `}>
-                        <QRCodeRenderer ref={qrRef} config={config} className="w-[280px] h-[280px]" />
+                        <QRCodeRenderer ref={qrRef} config={config} className="w-full h-full" />
                     </div>
                 </div>
 

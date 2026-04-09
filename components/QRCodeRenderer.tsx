@@ -15,6 +15,29 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
   const containerRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
+  // Ensure SVG scales perfectly without cropping
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const fixSvg = () => {
+        const svg = containerRef.current?.querySelector('svg');
+        if (svg) {
+            // Force viewBox so the SVG scales proportionally instead of cropping
+            if (svg.getAttribute('viewBox') !== '0 0 1000 1000') {
+                svg.setAttribute('viewBox', '0 0 1000 1000');
+            }
+            // Force width/height to 100% to fill the container
+            if (svg.getAttribute('width') !== '100%') {
+                svg.setAttribute('width', '100%');
+                svg.setAttribute('height', '100%');
+            }
+        }
+    };
+    const observer = new MutationObserver(fixSvg);
+    observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
+    setTimeout(fixSvg, 50);
+    return () => observer.disconnect();
+  }, []);
+
   useImperativeHandle(ref, () => ({
     download: async () => {
       if (!qrCode.current) return;
@@ -37,9 +60,9 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
 
       // Revert to preview size and fixed preview margin
       qrCode.current.update({
-          width: 280,
-          height: 280,
-          margin: 10
+          width: 1000,
+          height: 1000,
+          margin: 50
       });
     }
   }));
@@ -48,9 +71,9 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
   useEffect(() => {
     if (!qrCode.current) {
         qrCode.current = new QRCodeStyling({
-            width: 280, 
-            height: 280,
-            margin: 10, // Add default padding to preview
+            width: 1000, 
+            height: 1000,
+            margin: 50, // Add default padding to preview
             type: "svg",
             data: config.value,
             image: config.logoUrl || undefined,
@@ -81,9 +104,9 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
     if (!qrCode.current) return;
 
     const options: any = {
-        width: 280, // Preview size
-        height: 280,
-        margin: 10, // Maintain padding in preview
+        width: 1000, // High-res preview size
+        height: 1000,
+        margin: 50, // Maintain padding in preview
         data: config.value,
         image: config.logoUrl || undefined,
         qrOptions: {
@@ -151,7 +174,7 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
         )}
         
         {/* QR Code Canvas */}
-        <div ref={containerRef} className="relative z-10" id="canvas-container"></div>
+        <div ref={containerRef} className="relative z-10 w-full h-full flex items-center justify-center" id="canvas-container"></div>
     </div>
   );
 });
