@@ -17,42 +17,37 @@ interface Props {
 
 export default function Sidebar({ config, setConfig }: Props) {
   // Form states for complex types
-  const [wifiState, setWifiState] = useState({ ssid: '', password: '', encryption: 'WPA' });
-  const [vcardState, setVcardState] = useState({ firstName: '', lastName: '', phone: '', email: '', org: '', title: '' });
-  const [whatsappState, setWhatsappState] = useState({ phone: '', message: '' });
+  const [websiteState, setWebsiteState] = useState('https://example.com');
+  const [textState, setTextState] = useState('Welcome to QReator Pro!');
+  const [wifiState, setWifiState] = useState({ ssid: 'Guest_Network', password: 'password123', encryption: 'WPA' });
+  const [vcardState, setVcardState] = useState({ firstName: 'John', lastName: 'Doe', phone: '+1 555 123 4567', email: 'john@example.com', org: 'QReator Inc', title: 'Product Manager' });
+  const [whatsappState, setWhatsappState] = useState({ phone: '15551234567', message: 'Hello, I am interested in your services.' });
   
   // New States
-  const [phoneState, setPhoneState] = useState('');
-  const [locationState, setLocationState] = useState({ lat: '', long: '' });
-  const [calendarState, setCalendarState] = useState({ title: '', start: '', end: '', location: '', description: '' });
-  const [socialState, setSocialState] = useState({ facebook: '', instagram: '' });
-  const [youtubeState, setYoutubeState] = useState('');
+  const [phoneState, setPhoneState] = useState('+15551234567');
+  const [locationState, setLocationState] = useState({ lat: '40.7128', long: '-74.0060' });
+  const [calendarState, setCalendarState] = useState({ title: 'Product Launch', start: '2026-06-01T10:00', end: '2026-06-01T12:00', location: 'Virtual', description: 'Join us for the new product launch.' });
+  const [socialState, setSocialState] = useState({ facebook: 'zuck', instagram: 'instagram' });
+  const [youtubeState, setYoutubeState] = useState('@youtube');
   
   // Business State
   const [businessState, setBusinessState] = useState({
-    name: '',
-    slogan: '',
-    description: '',
-    about: '',
-    location: '',
-    contactName: '',
-    phone: '',
-    email: '',
-    website: '',
-    hours: {
-      Mon: '09:00 - 17:00',
-      Tue: '09:00 - 17:00',
-      Wed: '09:00 - 17:00',
-      Thu: '09:00 - 17:00',
-      Fri: '09:00 - 17:00',
-      Sat: 'Closed',
-      Sun: 'Closed'
-    }
+    name: 'QReator Studio',
+    about: 'We help brands connect the physical and digital worlds seamlessly.',
+    location: '123 Tech Boulevard, San Francisco, CA',
+    contactName: 'Support Team',
+    phone: '+1 800 555 0199',
+    email: 'hello@qreator.demo',
+    website: 'https://qreator.demo'
   });
 
   // Complex inputs effect
   useEffect(() => {
-    if (config.type === QRType.WIFI) {
+    if (config.type === QRType.WEBSITE) {
+      setConfig(c => ({...c, value: websiteState}));
+    } else if (config.type === QRType.TEXT) {
+      setConfig(c => ({...c, value: textState}));
+    } else if (config.type === QRType.WIFI) {
       setConfig(c => ({...c, value: `WIFI:S:${wifiState.ssid};T:${wifiState.encryption};P:${wifiState.password};;`}));
     } else if (config.type === QRType.VCARD) {
       const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:${vcardState.lastName};${vcardState.firstName}\nFN:${vcardState.firstName} ${vcardState.lastName}\nORG:${vcardState.org}\nTITLE:${vcardState.title}\nTEL:${vcardState.phone}\nEMAIL:${vcardState.email}\nEND:VCARD`;
@@ -76,18 +71,12 @@ DESCRIPTION:${calendarState.description}
 END:VEVENT`;
       setConfig(c => ({...c, value: event}));
     } else if (config.type === QRType.BUSINESS) {
-      const { name, slogan, description, about, location, contactName, phone, email, website, hours } = businessState;
-      const hoursText = Object.entries(hours).map(([day, time]) => `  ${day}: ${time}`).join('\n');
+      const { name, about, location, contactName, phone, email, website } = businessState;
       const text = `${name.toUpperCase()}
-${slogan}
 --------------------------------
-${description}
 
 📍 LOCATION
 ${location}
-
-🕒 OPENING HOURS
-${hoursText}
 
 📞 CONTACT
 ${contactName}
@@ -110,7 +99,7 @@ ${about}`;
       }
       setConfig(c => ({...c, value: `https://youtube.com/${handle}`}));
     }
-  }, [wifiState, vcardState, whatsappState, phoneState, locationState, calendarState, businessState, socialState, youtubeState, config.type, setConfig]);
+  }, [websiteState, textState, wifiState, vcardState, whatsappState, phoneState, locationState, calendarState, businessState, socialState, youtubeState, config.type, setConfig]);
 
   const types = [
     { id: QRType.WEBSITE, icon: Globe, label: 'Website' },
@@ -128,8 +117,8 @@ ${about}`;
   ];
 
   const renderContentInputs = () => {
-    const inputClass = "w-full bg-white border border-slate-200 text-slate-800 text-sm font-medium rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 p-3.5 outline-none transition-all placeholder:font-normal";
-    const labelClass = "block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1";
+    const inputClass = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm font-medium rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 p-3.5 outline-none transition-all placeholder:font-normal";
+    const labelClass = "block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 ml-1";
 
     switch(config.type) {
         case QRType.BUSINESS:
@@ -138,8 +127,6 @@ ${about}`;
                     <div className="space-y-3">
                         <label className={labelClass}>Company Info</label>
                         <input placeholder="Company Name" className={inputClass} value={businessState.name} onChange={e => setBusinessState({...businessState, name: e.target.value})} />
-                        <input placeholder="Slogan / Tagline" className={inputClass} value={businessState.slogan} onChange={e => setBusinessState({...businessState, slogan: e.target.value})} />
-                        <textarea placeholder="Short Description" rows={2} className={inputClass} value={businessState.description} onChange={e => setBusinessState({...businessState, description: e.target.value})} />
                     </div>
 
                     <div>
@@ -160,25 +147,6 @@ ${about}`;
                             <input placeholder="Email" className={inputClass} value={businessState.email} onChange={e => setBusinessState({...businessState, email: e.target.value})} />
                          </div>
                          <input placeholder="Website URL" className={inputClass} value={businessState.website} onChange={e => setBusinessState({...businessState, website: e.target.value})} />
-                    </div>
-
-                    <div>
-                         <label className={labelClass}>Opening Hours</label>
-                         <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
-                            {Object.keys(businessState.hours).map((day) => (
-                                <div key={day} className="flex items-center gap-3">
-                                    <span className="w-8 text-[10px] font-bold text-slate-500 uppercase">{day}</span>
-                                    <input 
-                                        className="flex-1 text-xs p-2 border border-slate-200 rounded-lg outline-none focus:border-brand-500 bg-white"
-                                        value={businessState.hours[day as keyof typeof businessState.hours]}
-                                        onChange={(e) => setBusinessState({
-                                            ...businessState, 
-                                            hours: { ...businessState.hours, [day]: e.target.value }
-                                        })}
-                                    />
-                                </div>
-                            ))}
-                         </div>
                     </div>
                 </div>
             );
@@ -292,25 +260,25 @@ ${about}`;
                         <div className="flex flex-wrap gap-2">
                             <button 
                                 onClick={() => setWhatsappState(prev => ({...prev, message: 'Greetings, I would like to inquire about your services.'}))}
-                                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-medium"
+                                className="text-[10px] bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg transition-colors font-medium"
                             >
                                 Formal Hello
                             </button>
                             <button 
                                 onClick={() => setWhatsappState(prev => ({...prev, message: 'Hello, I am interested in learning more about your company.'}))}
-                                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-medium"
+                                className="text-[10px] bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg transition-colors font-medium"
                             >
                                 Professional Hello
                             </button>
                             <button 
                                 onClick={() => setWhatsappState(prev => ({...prev, message: 'Hi! I saw your ad and would like to know more about the offer.'}))}
-                                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-medium"
+                                className="text-[10px] bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg transition-colors font-medium"
                             >
                                 Marketing
                             </button>
                             <button 
                                 onClick={() => setWhatsappState(prev => ({...prev, message: 'Please send over the weekly analytics report.'}))}
-                                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-medium"
+                                className="text-[10px] bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg transition-colors font-medium"
                             >
                                 Analytics
                             </button>
@@ -373,8 +341,8 @@ ${about}`;
                      <textarea 
                         className={inputClass} 
                         rows={5}
-                        value={config.value} 
-                        onChange={e => setConfig({...config, value: e.target.value})}
+                        value={textState} 
+                        onChange={e => setTextState(e.target.value)}
                         placeholder="Enter text here..."
                      />
                 </div>
@@ -386,8 +354,8 @@ ${about}`;
                     <input 
                         type="text" 
                         className={inputClass} 
-                        value={config.value} 
-                        onChange={e => setConfig({...config, value: e.target.value})}
+                        value={websiteState} 
+                        onChange={e => setWebsiteState(e.target.value)}
                         placeholder="https://example.com" 
                     />
                 </div>
@@ -399,7 +367,7 @@ ${about}`;
     <button 
         onClick={onClick}
         className={`w-full py-3 rounded-xl text-xs font-bold transition-all border-2 
-        ${active ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-100 text-slate-500 hover:border-slate-300 bg-white'}`}
+        ${active ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400' : 'border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'}`}
     >
         {label}
     </button>
@@ -409,10 +377,10 @@ ${about}`;
     <div className="p-4 md:p-6 space-y-6 pb-24">
         
         {/* 1. Content Card */}
-        <section className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-                <div className="bg-blue-100 text-blue-600 p-1 rounded-md"><Layers size={14}/></div>
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Content</h2>
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+                <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded-md"><Layers size={14}/></div>
+                <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Content</h2>
             </div>
             <div className="p-5">
                 <div className="grid grid-cols-4 gap-2 mb-6">
@@ -421,39 +389,39 @@ ${about}`;
                             key={t.id}
                             onClick={() => setConfig({...config, type: t.id})}
                             className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all h-20 
-                            ${config.type === t.id ? 'border-brand-500 bg-brand-50 text-brand-600 ring-1 ring-brand-500' : 'border-slate-100 text-slate-400 hover:border-brand-200 hover:bg-slate-50'}`}
+                            ${config.type === t.id ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 ring-1 ring-brand-500' : 'border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-brand-200 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                         >
                             <t.icon size={20} className="mb-1.5" />
                             <span className="text-[10px] font-semibold truncate w-full text-center">{t.label}</span>
                         </button>
                     ))}
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-inner">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-inner transition-colors duration-200">
                     {renderContentInputs()}
                 </div>
             </div>
         </section>
 
         {/* 2. Design Card */}
-        <section className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-                <div className="bg-purple-100 text-purple-600 p-1 rounded-md"><Palette size={14}/></div>
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Design</h2>
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+                <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md"><Palette size={14}/></div>
+                <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Design</h2>
             </div>
             <div className="p-5 space-y-8">
                 
                 {/* Colors */}
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <span className="text-sm font-semibold text-slate-700">QR Color</span>
-                        <div className="bg-slate-100 p-1 rounded-lg flex text-[10px] font-bold uppercase tracking-wide">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">QR Color</span>
+                        <div className="bg-slate-100 dark:bg-slate-700 p-1 rounded-lg flex text-[10px] font-bold uppercase tracking-wide">
                             <button 
                                 onClick={() => setConfig({...config, useGradient: false})}
-                                className={`px-3 py-1.5 rounded-md transition-all ${!config.useGradient ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`px-3 py-1.5 rounded-md transition-all ${!config.useGradient ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
                             >Solid</button>
                             <button 
                                 onClick={() => setConfig({...config, useGradient: true})}
-                                className={`px-3 py-1.5 rounded-md transition-all ${config.useGradient ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`px-3 py-1.5 rounded-md transition-all ${config.useGradient ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
                             >Gradient</button>
                         </div>
                     </div>
@@ -465,14 +433,14 @@ ${about}`;
                              <div className="grid grid-cols-2 gap-3">
                                 <button 
                                     onClick={() => setConfig({...config, gradient: {...config.gradient, type: 'linear'}})}
-                                    className={`flex flex-col items-center justify-center gap-1 border-2 py-3 rounded-xl transition-all ${config.gradient.type === 'linear' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-transparent bg-slate-50 text-slate-500'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 border-2 py-3 rounded-xl transition-all ${config.gradient.type === 'linear' ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400' : 'border-transparent bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}
                                 >
                                     <ArrowRight size={16} />
                                     <span className="text-[10px] font-bold uppercase">Linear</span>
                                 </button>
                                 <button 
                                     onClick={() => setConfig({...config, gradient: {...config.gradient, type: 'radial'}})}
-                                    className={`flex flex-col items-center justify-center gap-1 border-2 py-3 rounded-xl transition-all ${config.gradient.type === 'radial' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-transparent bg-slate-50 text-slate-500'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 border-2 py-3 rounded-xl transition-all ${config.gradient.type === 'radial' ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400' : 'border-transparent bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}
                                 >
                                     <CircleDot size={16} />
                                     <span className="text-[10px] font-bold uppercase">Radial</span>
@@ -483,10 +451,10 @@ ${about}`;
                                 <ColorPicker label="End" color={config.gradient.color2} onChange={(c) => setConfig({...config, gradient: {...config.gradient, color2: c}})} />
                              </div>
                              {config.gradient.type === 'linear' && (
-                                 <div className="bg-slate-50 px-4 py-3 rounded-xl border border-slate-100">
-                                     <div className="flex justify-between text-xs text-slate-500 font-medium mb-2">
+                                 <div className="bg-slate-50 dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                                     <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">
                                          <span>Gradient Angle</span>
-                                         <span className="bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{config.gradient.rotation}°</span>
+                                         <span className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded shadow-sm border border-slate-100 dark:border-slate-700">{config.gradient.rotation}°</span>
                                      </div>
                                      <input type="range" min="0" max="360" step="45" value={config.gradient.rotation} onChange={(e) => setConfig({...config, gradient: {...config.gradient, rotation: parseInt(e.target.value)}})} className="w-full" />
                                  </div>
@@ -495,17 +463,17 @@ ${about}`;
                     )}
                 </div>
 
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
 
                 {/* Background */}
                 <div>
                     <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-semibold text-slate-700">Background</span>
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Background</span>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 font-medium">Transparent</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Transparent</span>
                             <button 
                                 onClick={() => setConfig({...config, bgEnabled: !config.bgEnabled})}
-                                className={`relative flex h-6 w-11 items-center rounded-full transition-colors ${!config.bgEnabled ? 'bg-brand-600' : 'bg-slate-200'}`}
+                                className={`relative flex h-6 w-11 items-center rounded-full transition-colors ${!config.bgEnabled ? 'bg-brand-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                             >
                                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!config.bgEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                             </button>
@@ -514,16 +482,16 @@ ${about}`;
                     {config.bgEnabled && (
                         <div className="space-y-4">
                             {/* Background Type Toggle */}
-                             <div className="bg-slate-100 p-1 rounded-lg flex text-[10px] font-bold uppercase tracking-wide w-full">
+                             <div className="bg-slate-100 dark:bg-slate-700 p-1 rounded-lg flex text-[10px] font-bold uppercase tracking-wide w-full">
                                 <button 
                                     onClick={() => setConfig({...config, bgType: 'color'})}
-                                    className={`flex-1 px-3 py-1.5 rounded-md transition-all flex items-center justify-center gap-2 ${config.bgType === 'color' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 px-3 py-1.5 rounded-md transition-all flex items-center justify-center gap-2 ${config.bgType === 'color' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
                                 >
                                     <PaintBucket size={12} /> Color
                                 </button>
                                 <button 
                                     onClick={() => setConfig({...config, bgType: 'image'})}
-                                    className={`flex-1 px-3 py-1.5 rounded-md transition-all flex items-center justify-center gap-2 ${config.bgType === 'image' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 px-3 py-1.5 rounded-md transition-all flex items-center justify-center gap-2 ${config.bgType === 'image' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
                                 >
                                     <ImageIcon size={12} /> Image
                                 </button>
@@ -534,7 +502,7 @@ ${about}`;
                             ) : (
                                 <div className="space-y-3">
                                      {!config.bgImage ? (
-                                        <label className="block bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-white hover:border-brand-300 transition-all cursor-pointer group">
+                                        <label className="block bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center hover:bg-white dark:hover:bg-slate-800 hover:border-brand-300 dark:hover:border-brand-500 transition-all cursor-pointer group">
                                             <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                                                 if (e.target.files?.[0]) {
                                                     const r = new FileReader();
@@ -542,13 +510,13 @@ ${about}`;
                                                     r.readAsDataURL(e.target.files[0]);
                                                 }
                                             }} />
-                                            <div className="bg-white p-2 rounded-full shadow-sm inline-block mb-2 group-hover:scale-105 transition-transform">
-                                                <UploadCloud size={16} className="text-brand-500" />
+                                            <div className="bg-white dark:bg-slate-800 p-2 rounded-full shadow-sm inline-block mb-2 group-hover:scale-105 transition-transform">
+                                                <UploadCloud size={16} className="text-brand-500 dark:text-brand-400" />
                                             </div>
-                                            <p className="text-xs text-slate-700 font-medium">Upload Background</p>
+                                            <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">Upload Background</p>
                                         </label>
                                      ) : (
-                                         <div className="relative rounded-xl overflow-hidden border border-slate-200 group">
+                                         <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group">
                                              <img src={config.bgImage} className="w-full h-24 object-cover" />
                                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                  <button 
@@ -563,9 +531,9 @@ ${about}`;
                                      
                                      {config.bgImage && (
                                          <div>
-                                             <div className="flex justify-between text-xs text-slate-500 font-medium mb-2">
+                                             <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">
                                                  <span>Image Opacity</span>
-                                                 <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">{(config.bgOpacity * 100).toFixed(0)}%</span>
+                                                 <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">{(config.bgOpacity * 100).toFixed(0)}%</span>
                                              </div>
                                              <input 
                                                 type="range" min="0" max="1" step="0.05" 
@@ -581,14 +549,14 @@ ${about}`;
                     )}
                 </div>
 
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
                 
                  {/* Error Correction */}
                  <div>
                     <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-1.5">
-                             <ShieldCheck size={14} className="text-slate-400" />
-                             <span className="text-sm font-semibold text-slate-700">Error Correction</span>
+                             <ShieldCheck size={14} className="text-slate-400 dark:text-slate-500" />
+                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Error Correction</span>
                         </div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
@@ -606,20 +574,20 @@ ${about}`;
                                     onClick={() => setConfig({...config, errorCorrectionLevel: level})}
                                     className={`py-2 rounded-lg text-[10px] font-bold border transition-all
                                     ${config.errorCorrectionLevel === level
-                                        ? 'bg-brand-50 border-brand-500 text-brand-600' 
-                                        : 'bg-white border-slate-200 text-slate-500 hover:border-brand-200 hover:text-brand-600'}`}
+                                        ? 'bg-brand-50 dark:bg-brand-900/30 border-brand-500 text-brand-600 dark:text-brand-400' 
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-brand-200 dark:hover:border-slate-600 hover:text-brand-600 dark:hover:text-brand-400'}`}
                                 >
                                     {label.split(' ')[0]}
                                 </button>
                              );
                          })}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
                         Higher levels allow the QR to be scanned even if damaged or covered by a logo, but make the QR code denser.
                     </p>
                 </div>
 
-                <div className="h-px bg-slate-100 w-full"></div>
+                <div className="h-px bg-slate-100 dark:bg-slate-700 w-full"></div>
 
                 {/* Patterns */}
                 <div>
@@ -649,14 +617,14 @@ ${about}`;
         </section>
 
         {/* 3. Logo Card */}
-        <section className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-             <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-                <div className="bg-orange-100 text-orange-600 p-1 rounded-md"><ImageIcon size={14}/></div>
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Logo</h2>
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+                <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 p-1 rounded-md"><ImageIcon size={14}/></div>
+                <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Logo</h2>
             </div>
             <div className="p-5">
                 {!config.logoUrl ? (
-                    <label className="block bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-white hover:border-brand-300 transition-all cursor-pointer group">
+                    <label className="block bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center hover:bg-white dark:hover:bg-slate-800 hover:border-brand-300 dark:hover:border-brand-500 transition-all cursor-pointer group">
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                              if (e.target.files?.[0]) {
                                  const r = new FileReader();
@@ -664,17 +632,17 @@ ${about}`;
                                  r.readAsDataURL(e.target.files[0]);
                              }
                         }} />
-                        <div className="bg-white p-3 rounded-full shadow-sm inline-block mb-3 group-hover:scale-105 transition-transform">
-                            <UploadCloud className="text-brand-500" />
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-full shadow-sm inline-block mb-3 group-hover:scale-105 transition-transform">
+                            <UploadCloud className="text-brand-500 dark:text-brand-400" />
                         </div>
-                        <p className="text-sm text-slate-700 font-medium">Tap to upload logo</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">Tap to upload logo</p>
                     </label>
                 ) : (
                     <div className="flex flex-col items-center relative">
-                        <img src={config.logoUrl} className="w-16 h-16 object-contain mb-3 rounded-lg shadow-sm bg-white border border-slate-200 p-2" />
+                        <img src={config.logoUrl} className="w-16 h-16 object-contain mb-3 rounded-lg shadow-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2" />
                         <button 
                             onClick={() => setConfig({...config, logoUrl: null})}
-                            className="text-[10px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+                            className="text-[10px] font-bold text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
                         >
                             <X size={12} /> Remove
                         </button>
