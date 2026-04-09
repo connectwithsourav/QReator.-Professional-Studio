@@ -142,7 +142,7 @@ ${about}`;
                     <div className="space-y-3">
                          <label className={labelClass}>Contact Details</label>
                          <input placeholder="Contact Person Name" className={inputClass} value={businessState.contactName} onChange={e => setBusinessState({...businessState, contactName: e.target.value})} />
-                         <div className="grid grid-cols-2 gap-3">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input placeholder="Phone" className={inputClass} value={businessState.phone} onChange={e => setBusinessState({...businessState, phone: e.target.value})} />
                             <input placeholder="Email" className={inputClass} value={businessState.email} onChange={e => setBusinessState({...businessState, email: e.target.value})} />
                          </div>
@@ -174,7 +174,7 @@ ${about}`;
         case QRType.VCARD:
             return (
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={labelClass}>First Name</label>
                             <input type="text" className={inputClass} value={vcardState.firstName} onChange={e => setVcardState({...vcardState, firstName: e.target.value})} />
@@ -204,7 +204,7 @@ ${about}`;
         case QRType.LOCATION:
              return (
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={labelClass}>Latitude</label>
                             <input type="text" className={inputClass} placeholder="40.7128" value={locationState.lat} onChange={e => setLocationState({...locationState, lat: e.target.value})} />
@@ -224,7 +224,7 @@ ${about}`;
                         <label className={labelClass}>Event Title</label>
                         <input type="text" className={inputClass} placeholder="Meeting" value={calendarState.title} onChange={e => setCalendarState({...calendarState, title: e.target.value})} />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label className={labelClass}>Start</label>
                             <input type="datetime-local" className={inputClass} value={calendarState.start} onChange={e => setCalendarState({...calendarState, start: e.target.value})} />
@@ -383,7 +383,7 @@ ${about}`;
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Content</h2>
             </div>
             <div className="p-5">
-                <div className="grid grid-cols-4 gap-2 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
                     {types.map(t => (
                         <button 
                             key={t.id}
@@ -430,7 +430,7 @@ ${about}`;
                         <ColorPicker label="Hex Code" color={config.dotColor} onChange={(c) => setConfig({...config, dotColor: c})} />
                     ) : (
                         <div className="space-y-4">
-                             <div className="grid grid-cols-2 gap-3">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button 
                                     onClick={() => setConfig({...config, gradient: {...config.gradient, type: 'linear'}})}
                                     className={`flex flex-col items-center justify-center gap-1 border-2 py-3 rounded-xl transition-all ${config.gradient.type === 'linear' ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400' : 'border-transparent bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}
@@ -446,7 +446,7 @@ ${about}`;
                                     <span className="text-[10px] font-bold uppercase">Radial</span>
                                 </button>
                              </div>
-                             <div className="grid grid-cols-2 gap-3">
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <ColorPicker label="Start" color={config.gradient.color1} onChange={(c) => setConfig({...config, gradient: {...config.gradient, color1: c}})} />
                                 <ColorPicker label="End" color={config.gradient.color2} onChange={(c) => setConfig({...config, gradient: {...config.gradient, color2: c}})} />
                              </div>
@@ -559,7 +559,7 @@ ${about}`;
                              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Error Correction</span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                          {(['L', 'M', 'Q', 'H'] as ErrorCorrectionLevel[]).map(level => {
                              let label = '';
                              switch(level) {
@@ -592,7 +592,7 @@ ${about}`;
                 {/* Patterns */}
                 <div>
                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Pattern Style</span>
-                     <div className="grid grid-cols-3 gap-2">
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                          {(['square', 'dots', 'rounded', 'classy', 'classy-rounded', 'extra-rounded'] as DotType[]).map(s => (
                              <StyleBtn 
                                 key={s} 
@@ -606,7 +606,7 @@ ${about}`;
 
                 <div>
                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Corners</span>
-                     <div className="grid grid-cols-3 gap-2">
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                          <StyleBtn active={config.cornerSquareStyle === 'square'} label="Square" onClick={() => setConfig({...config, cornerSquareStyle: 'square', cornerDotStyle: 'square'})} />
                          <StyleBtn active={config.cornerSquareStyle === 'dot'} label="Dot" onClick={() => setConfig({...config, cornerSquareStyle: 'dot', cornerDotStyle: 'dot'})} />
                          <StyleBtn active={config.cornerSquareStyle === 'extra-rounded'} label="Round" onClick={() => setConfig({...config, cornerSquareStyle: 'extra-rounded', cornerDotStyle: 'dot'})} />
