@@ -55,7 +55,7 @@ const App = () => {
        </header>
 
        {/* Main Content Grid */}
-       <div className="max-w-7xl mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 items-start w-full pb-24 md:pb-8">
+       <div className="max-w-7xl mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 items-start w-full flex-grow">
           
           {/* Left Column: Settings */}
           <div className={`lg:col-span-7 w-full min-w-0 ${activeTab === 'preview' ? 'hidden md:block' : 'block'}`}>
@@ -187,6 +187,21 @@ const App = () => {
           </div>
 
        </div>
+
+       {/* Footer */}
+       <footer className="w-full py-6 text-center text-sm text-slate-500 dark:text-slate-400 pb-28 md:pb-6 mt-auto">
+           <p>
+               Designed and developed by{' '}
+               <a 
+                   href="https://connectwithsourav.com/" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition-colors"
+               >
+                   Sourav Dutta
+               </a>
+           </p>
+       </footer>
 
        {/* Bottom Navigation Bar (Mobile Only) */}
        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center pb-safe">
