@@ -13,9 +13,10 @@ import {
 interface Props {
   config: QRCodeConfig;
   setConfig: React.Dispatch<React.SetStateAction<QRCodeConfig>>;
+  activeTab?: 'content' | 'design' | 'preview';
 }
 
-export default function Sidebar({ config, setConfig }: Props) {
+export default function Sidebar({ config, setConfig, activeTab = 'content' }: Props) {
   // Form states for complex types
   const [websiteState, setWebsiteState] = useState('https://example.com');
   const [textState, setTextState] = useState('Welcome to QReator Pro!');
@@ -377,7 +378,7 @@ ${about}`;
     <div className="p-4 md:p-6 space-y-6 pb-24">
         
         {/* 1. Content Card */}
-        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'design' ? 'hidden md:block' : 'block'}`}>
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded-md"><Layers size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Content</h2>
@@ -403,7 +404,7 @@ ${about}`;
         </section>
 
         {/* 2. Design Card */}
-        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md"><Palette size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Design</h2>
@@ -617,7 +618,7 @@ ${about}`;
         </section>
 
         {/* 3. Logo Card */}
-        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 p-1 rounded-md"><ImageIcon size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Logo</h2>

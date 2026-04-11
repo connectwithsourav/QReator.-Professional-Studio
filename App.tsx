@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import QRCodeRenderer, { QRCodeHandle } from './components/QRCodeRenderer';
 import { QRCodeConfig, DEFAULT_CONFIG, FileExtension } from './types';
-import { QrCode, Settings2, Download, ChevronDown, Monitor, Image as ImageIcon, Share2, Moon, Sun } from 'lucide-react';
+import { QrCode, Settings2, Download, ChevronDown, Monitor, Image as ImageIcon, Share2, Moon, Sun, Layers, Palette } from 'lucide-react';
 
 const App = () => {
   const [config, setConfig] = useState<QRCodeConfig>(DEFAULT_CONFIG);
   const [isDark, setIsDark] = useState(false);
+  const [activeTab, setActiveTab] = useState<'content' | 'design' | 'preview'>('content');
   const qrRef = useRef<QRCodeHandle>(null);
 
   useEffect(() => {
@@ -54,15 +55,15 @@ const App = () => {
        </header>
 
        {/* Main Content Grid */}
-       <div className="max-w-7xl mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 items-start w-full">
+       <div className="max-w-7xl mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 items-start w-full pb-24 md:pb-8">
           
           {/* Left Column: Settings */}
-          <div className="lg:col-span-7 w-full min-w-0">
-             <Sidebar config={config} setConfig={setConfig} />
+          <div className={`lg:col-span-7 w-full min-w-0 ${activeTab === 'preview' ? 'hidden md:block' : 'block'}`}>
+             <Sidebar config={config} setConfig={setConfig} activeTab={activeTab} />
           </div>
 
           {/* Right Column: Preview */}
-          <div className="lg:col-span-5 w-full min-w-0 lg:sticky lg:top-28">
+          <div className={`lg:col-span-5 w-full min-w-0 lg:sticky lg:top-28 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
              
              {/* Modern Preview Card */}
              <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-white dark:border-slate-700 overflow-hidden relative ring-1 ring-slate-100 dark:ring-slate-800 transition-colors duration-200">
@@ -185,6 +186,22 @@ const App = () => {
              </div>
           </div>
 
+       </div>
+
+       {/* Bottom Navigation Bar (Mobile Only) */}
+       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center pb-safe">
+           <button onClick={() => setActiveTab('content')} className={`flex flex-col items-center py-3 px-4 flex-1 ${activeTab === 'content' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}>
+               <Layers size={20} className="mb-1" />
+               <span className="text-[10px] font-bold uppercase tracking-wider">Content</span>
+           </button>
+           <button onClick={() => setActiveTab('design')} className={`flex flex-col items-center py-3 px-4 flex-1 ${activeTab === 'design' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}>
+               <Palette size={20} className="mb-1" />
+               <span className="text-[10px] font-bold uppercase tracking-wider">Design</span>
+           </button>
+           <button onClick={() => setActiveTab('preview')} className={`flex flex-col items-center py-3 px-4 flex-1 ${activeTab === 'preview' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}>
+               <QrCode size={20} className="mb-1" />
+               <span className="text-[10px] font-bold uppercase tracking-wider">Preview</span>
+           </button>
        </div>
     </div>
   );
