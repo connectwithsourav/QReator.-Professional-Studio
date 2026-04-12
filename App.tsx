@@ -29,15 +29,14 @@ const App = () => {
        
        {/* App Header */}
        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 transition-colors duration-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-             <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-tr from-brand-600 to-brand-500 text-white p-2.5 rounded-xl shadow-lg shadow-brand-500/20">
-                   <QrCode size={22} strokeWidth={2.5} />
-                </div>
-                <div>
-                   <h1 className="font-bold text-xl leading-none text-slate-900 dark:text-white tracking-tight">QReator<span className="text-brand-600">.</span></h1>
-                   <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Professional Studio</p>
-                </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 py-2 md:py-3 flex justify-between items-center">
+             <div className="flex items-center h-full">
+                <img 
+                    src="https://ik.imagekit.io/sourav7img/QReatorProfessionalStudio.png" 
+                    alt="QReator Professional Studio" 
+                    className="h-full w-auto object-contain"
+                    referrerPolicy="no-referrer"
+                />
              </div>
              <div className="flex gap-2">
                 <button 
