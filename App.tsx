@@ -32,9 +32,9 @@ const App = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 py-2 md:py-3 flex justify-between items-center">
              <div className="flex items-center h-full">
                 <img 
-                    src="https://ik.imagekit.io/sourav7img/QRProfessionalStudio.png" 
+                    src={isDark ? "https://ik.imagekit.io/sourav7img/QRProfessionalStudio2.png" : "https://ik.imagekit.io/sourav7img/QRProfessionalStudio.png"} 
                     alt="QR Professional Studio" 
-                    className="h-full w-auto object-contain"
+                    className="h-full w-auto object-contain transition-opacity duration-200"
                     referrerPolicy="no-referrer"
                 />
              </div>
