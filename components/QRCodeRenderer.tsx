@@ -41,9 +41,19 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
   // Re-apply SVG styling whenever it mutates or config changes
   useEffect(() => {
     if (!containerRef.current) return;
+    
+    let isProcessing = false;
+    
     const fixSvg = () => {
+        if (isProcessing) return;
+        
         const svg = containerRef.current?.querySelector('svg');
-        if (svg) {
+        if (!svg) return;
+        
+        // Prevent observation of our own changes
+        isProcessing = true;
+        
+        try {
             if (svg.getAttribute('viewBox') !== '0 0 1000 1000') {
                 svg.setAttribute('viewBox', '0 0 1000 1000');
             }
@@ -60,7 +70,6 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
 
             // Apply background clipping
             const bgRects = Array.from(svg.querySelectorAll('rect'));
-            // Typically the first rect that fills the canvas
             const bgRect = bgRects.find(r => r.getAttribute('width') === '1000' || r.getAttribute('width') === '100%');
             
             const [bgTL, bgTR, bgBR, bgBL] = config.bgRadius;
@@ -75,9 +84,16 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
                 }
                 const pTL = bgTL * 10; const pTR = bgTR * 10; const pBR = bgBR * 10; const pBL = bgBL * 10;
                 const d = getRoundedRectPath(0, 0, 1000, 1000, [pTL, pTR, pBR, pBL]);
-                (bgClip.firstChild as Element).setAttribute('d', d);
-                bgRect.setAttribute('clip-path', 'url(#bg-clip)');
-            } else if (bgRect) {
+                
+                const pathNode = bgClip.firstChild as Element;
+                if (pathNode.getAttribute('d') !== d) {
+                    pathNode.setAttribute('d', d);
+                }
+                
+                if (bgRect.getAttribute('clip-path') !== 'url(#bg-clip)') {
+                    bgRect.setAttribute('clip-path', 'url(#bg-clip)');
+                }
+            } else if (bgRect && bgRect.hasAttribute('clip-path')) {
                 bgRect.removeAttribute('clip-path');
             }
 
@@ -90,7 +106,7 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
                 const h = parseFloat(imageNode.getAttribute('height') || '0');
                 
                 const [lTL, lTR, lBR, lBL] = config.logoRadius;
-                if (lTL > 0 || lTR > 0 || lBR > 0 || lBL > 0) {
+                if (w > 0 && h > 0 && (lTL > 0 || lTR > 0 || lBR > 0 || lBL > 0)) {
                      let logoClip = defs.querySelector('#logo-clip');
                      if (!logoClip) {
                          logoClip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
@@ -105,12 +121,22 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
                      const pBR = (lBR / 50) * maxRadius;
                      const pBL = (lBL / 50) * maxRadius;
                      const d = getRoundedRectPath(x, y, w, h, [pTL, pTR, pBR, pBL]);
-                     (logoClip.firstChild as Element).setAttribute('d', d);
-                     imageNode.setAttribute('clip-path', 'url(#logo-clip)');
-                } else {
+                     
+                     const pathNode = logoClip.firstChild as Element;
+                     if (pathNode.getAttribute('d') !== d) {
+                         pathNode.setAttribute('d', d);
+                     }
+                     
+                     if (imageNode.getAttribute('clip-path') !== 'url(#logo-clip)') {
+                         imageNode.setAttribute('clip-path', 'url(#logo-clip)');
+                     }
+                } else if (imageNode.hasAttribute('clip-path')) {
                     imageNode.removeAttribute('clip-path');
                 }
             }
+        } finally {
+            // Processing done, allow observation again
+            setTimeout(() => { isProcessing = false; }, 0);
         }
     };
     
