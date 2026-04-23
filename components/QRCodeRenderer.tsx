@@ -11,59 +11,185 @@ export interface QRCodeHandle {
   download: () => void;
 }
 
+function getRoundedRectPath(x: number, y: number, w: number, h: number, radii: [number, number, number, number]) {
+  const [tl, tr, br, bl] = radii;
+  return `
+    M ${x + tl} ${y}
+    L ${x + w - tr} ${y}
+    Q ${x + w} ${y} ${x + w} ${y + tr}
+    L ${x + w} ${y + h - br}
+    Q ${x + w} ${y + h} ${x + w - br} ${y + h}
+    L ${x + bl} ${y + h}
+    Q ${x} ${y + h} ${x} ${y + h - bl}
+    L ${x} ${y + tl}
+    Q ${x} ${y} ${x + tl} ${y} Z
+  `;
+}
+
+function getClipPathCSS(radii: [number, number, number, number]) {
+  const [tl, tr, br, bl] = radii;
+  const p = (val: number) => `${val}%`;
+  // Construct complex polygon or just use border-radius for CSS
+  // Using standard border-radius CSS is easier for HTML div overlay:
+  return `${p(tl)} ${p(tr)} ${p(br)} ${p(bl)}`;
+}
+
 const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
-  // Ensure SVG scales perfectly without cropping
+  // Re-apply SVG styling whenever it mutates or config changes
   useEffect(() => {
     if (!containerRef.current) return;
     const fixSvg = () => {
         const svg = containerRef.current?.querySelector('svg');
         if (svg) {
-            // Force viewBox so the SVG scales proportionally instead of cropping
             if (svg.getAttribute('viewBox') !== '0 0 1000 1000') {
                 svg.setAttribute('viewBox', '0 0 1000 1000');
             }
-            // Force width/height to 100% to fill the container
             if (svg.getAttribute('width') !== '100%') {
                 svg.setAttribute('width', '100%');
                 svg.setAttribute('height', '100%');
             }
+            
+            let defs = svg.querySelector('defs');
+            if (!defs) {
+                defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                svg.insertBefore(defs, svg.firstChild);
+            }
+
+            // Apply background clipping
+            const bgRects = Array.from(svg.querySelectorAll('rect'));
+            // Typically the first rect that fills the canvas
+            const bgRect = bgRects.find(r => r.getAttribute('width') === '1000' || r.getAttribute('width') === '100%');
+            
+            const [bgTL, bgTR, bgBR, bgBL] = config.bgRadius;
+            if (bgRect && (bgTL > 0 || bgTR > 0 || bgBR > 0 || bgBL > 0)) {
+                let bgClip = defs.querySelector('#bg-clip');
+                if (!bgClip) {
+                    bgClip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+                    bgClip.setAttribute('id', 'bg-clip');
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    bgClip.appendChild(path);
+                    defs.appendChild(bgClip);
+                }
+                const pTL = bgTL * 10; const pTR = bgTR * 10; const pBR = bgBR * 10; const pBL = bgBL * 10;
+                const d = getRoundedRectPath(0, 0, 1000, 1000, [pTL, pTR, pBR, pBL]);
+                (bgClip.firstChild as Element).setAttribute('d', d);
+                bgRect.setAttribute('clip-path', 'url(#bg-clip)');
+            } else if (bgRect) {
+                bgRect.removeAttribute('clip-path');
+            }
+
+            // Handle logo rounding
+            const imageNode = svg.querySelector('image');
+            if (imageNode) {
+                const x = parseFloat(imageNode.getAttribute('x') || '0');
+                const y = parseFloat(imageNode.getAttribute('y') || '0');
+                const w = parseFloat(imageNode.getAttribute('width') || '0');
+                const h = parseFloat(imageNode.getAttribute('height') || '0');
+                
+                const [lTL, lTR, lBR, lBL] = config.logoRadius;
+                if (lTL > 0 || lTR > 0 || lBR > 0 || lBL > 0) {
+                     let logoClip = defs.querySelector('#logo-clip');
+                     if (!logoClip) {
+                         logoClip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+                         logoClip.setAttribute('id', 'logo-clip');
+                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                         logoClip.appendChild(path);
+                         defs.appendChild(logoClip);
+                     }
+                     const maxRadius = Math.min(w, h) / 2;
+                     const pTL = (lTL / 50) * maxRadius; 
+                     const pTR = (lTR / 50) * maxRadius;
+                     const pBR = (lBR / 50) * maxRadius;
+                     const pBL = (lBL / 50) * maxRadius;
+                     const d = getRoundedRectPath(x, y, w, h, [pTL, pTR, pBR, pBL]);
+                     (logoClip.firstChild as Element).setAttribute('d', d);
+                     imageNode.setAttribute('clip-path', 'url(#logo-clip)');
+                } else {
+                    imageNode.removeAttribute('clip-path');
+                }
+            }
         }
     };
+    
+    // Watch for internal SVG rebuilds
     const observer = new MutationObserver(fixSvg);
     observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
+    
+    // Explicitly call fix once 
     setTimeout(fixSvg, 50);
+    
     return () => observer.disconnect();
-  }, []);
+  }, [config]);
 
   useImperativeHandle(ref, () => ({
     download: async () => {
-      if (!qrCode.current) return;
+      const svgNode = containerRef.current?.querySelector('svg');
+      if (!svgNode) return;
       
-      // Calculate proportional margin for high-res export (approx 5% of size)
-      // This ensures the "padding" look is preserved in the downloaded file
-      const exportMargin = Math.floor(config.size * 0.05);
-
-      // Update with full size and proportional margin for download
-      qrCode.current.update({
-          width: config.size,
-          height: config.size,
-          margin: exportMargin
-      });
+      const clone = svgNode.cloneNode(true) as SVGSVGElement;
       
-      await qrCode.current.download({ 
-        name: `qr-studio-${Date.now()}`, 
-        extension: config.fileExt 
-      });
+      // Calculate export sizing
+      const exportMargin = Math.floor(config.size * 0.05); // 5% native padding
+      // Re-scale internal viewport if we want, or just let SVG scale to custom canvas width
+      // Since viewBox is 0 0 1000 1000, forcing width/height to config.size is perfect.
+      clone.setAttribute('width', config.size.toString());
+      clone.setAttribute('height', config.size.toString());
+      
+      // If we use an HTML background image, we must inject it into the SVG clone for export
+      if (config.bgEnabled && config.bgType === 'image' && config.bgImage) {
+           const bgImg = document.createElementNS("http://www.w3.org/2000/svg", "image");
+           bgImg.setAttribute("href", config.bgImage);
+           bgImg.setAttribute("x", "0");
+           bgImg.setAttribute("y", "0");
+           bgImg.setAttribute("width", "1000"); // Matches viewBox
+           bgImg.setAttribute("height", "1000");
+           bgImg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+           bgImg.setAttribute("opacity", config.bgOpacity.toString());
+           
+           // Apply background clipping if any
+           const [bgTL, bgTR, bgBR, bgBL] = config.bgRadius;
+           if (bgTL > 0 || bgTR > 0 || bgBR > 0 || bgBL > 0) {
+               bgImg.setAttribute('clip-path', 'url(#bg-clip)');
+           }
+           
+           clone.insertBefore(bgImg, clone.firstChild);
+      }
 
-      // Revert to preview size and fixed preview margin
-      qrCode.current.update({
-          width: 1000,
-          height: 1000,
-          margin: 50
-      });
+      const serialized = new XMLSerializer().serializeToString(clone);
+      const svgBlob = new Blob([serialized], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      
+      if (config.fileExt === 'svg') {
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `qr-studio-${Date.now()}.svg`;
+          link.click();
+          URL.revokeObjectURL(url);
+      } else {
+          const img = new Image();
+          img.onload = () => {
+              const canvas = document.createElement("canvas");
+              canvas.width = config.size;
+              canvas.height = config.size;
+              const ctx = canvas.getContext("2d");
+              if (ctx) {
+                  // Transparent base
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(img, 0, 0, config.size, config.size);
+                  const dataUrl = canvas.toDataURL(`image/${config.fileExt}`, 1.0);
+                  const link = document.createElement("a");
+                  link.href = dataUrl;
+                  link.download = `qr-studio-${Date.now()}.${config.fileExt}`;
+                  link.click();
+              }
+              URL.revokeObjectURL(url);
+          };
+          img.crossOrigin = "anonymous";
+          img.src = url;
+      }
     }
   }));
 
@@ -73,24 +199,14 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
         qrCode.current = new QRCodeStyling({
             width: 1000, 
             height: 1000,
-            margin: 50, // Add default padding to preview
+            margin: 50,
             type: "svg",
             data: config.value,
             image: config.logoUrl || undefined,
-            qrOptions: {
-                errorCorrectionLevel: config.errorCorrectionLevel
-            },
-            dotsOptions: {
-                color: config.dotColor,
-                type: config.dotStyle
-            },
-            backgroundOptions: {
-                color: config.bgEnabled && config.bgType === 'color' ? config.bgColor : 'transparent',
-            },
-            imageOptions: {
-                crossOrigin: "anonymous",
-                margin: 5
-            }
+            qrOptions: { errorCorrectionLevel: config.errorCorrectionLevel },
+            dotsOptions: { color: config.dotColor, type: config.dotStyle },
+            backgroundOptions: { color: config.bgEnabled && config.bgType === 'color' ? config.bgColor : 'transparent' },
+            imageOptions: { crossOrigin: "anonymous", margin: 5 }
         });
         if (containerRef.current) {
             containerRef.current.innerHTML = '';
@@ -104,21 +220,14 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
     if (!qrCode.current) return;
 
     const options: any = {
-        width: 1000, // High-res preview size
+        width: 1000, 
         height: 1000,
-        margin: 50, // Maintain padding in preview
+        margin: 50, 
         data: config.value,
         image: config.logoUrl || undefined,
-        qrOptions: {
-            errorCorrectionLevel: config.errorCorrectionLevel
-        },
-        dotsOptions: {
-            type: config.dotStyle,
-            color: config.dotColor
-        },
+        qrOptions: { errorCorrectionLevel: config.errorCorrectionLevel },
+        dotsOptions: { type: config.dotStyle, color: config.dotColor },
         backgroundOptions: {
-             // If image background is used, we set the QR library background to transparent
-             // so the underlying image div shows through.
              color: config.bgEnabled && config.bgType === 'color' ? config.bgColor : 'transparent',
         },
         cornersSquareOptions: {
@@ -131,7 +240,6 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
         }
     };
 
-    // Apply Gradient
     if (config.useGradient) {
         const gradient = {
             type: config.gradient.type,
@@ -145,7 +253,6 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
         options.cornersSquareOptions.gradient = gradient;
         options.cornersDotOptions.gradient = gradient;
         
-        // Remove solid colors so gradient shows
         delete options.dotsOptions.color;
         delete options.cornersSquareOptions.color;
         delete options.cornersDotOptions.color;
@@ -159,22 +266,24 @@ const QRCodeRenderer = forwardRef<QRCodeHandle, Props>(({ config, className }, r
 
   }, [config]);
 
+  const cssRadii = getClipPathCSS(config.bgRadius);
+
   return (
     <div className={`relative ${className}`}>
         {/* Layered Background Image for Preview */}
         {config.bgEnabled && config.bgType === 'image' && config.bgImage && (
             <div 
-                className="absolute inset-0 bg-cover bg-center rounded-sm z-0" 
+                className="absolute inset-0 bg-cover bg-center z-0 overflow-hidden" 
                 style={{ 
                     backgroundImage: `url(${config.bgImage})`, 
                     opacity: config.bgOpacity,
-                    // Ensures the background fits nicely behind the QR code
+                    borderRadius: cssRadii
                 }}
             />
         )}
         
         {/* QR Code Canvas */}
-        <div ref={containerRef} className="relative z-10 w-full h-full flex items-center justify-center" id="canvas-container"></div>
+        <div ref={containerRef} className="relative z-10 w-full h-full flex items-center justify-center"></div>
     </div>
   );
 });

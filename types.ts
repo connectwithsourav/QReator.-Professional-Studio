@@ -43,6 +43,7 @@ export interface QRCodeConfig {
   bgColor: string;
   bgImage: string | null;
   bgOpacity: number;
+  bgRadius: [number, number, number, number]; // [tl, tr, br, bl] in percentages
 
   // Design - Corners
   cornerSquareStyle: CornerType; // 'square' | 'dot' | 'extra-rounded'
@@ -53,6 +54,7 @@ export interface QRCodeConfig {
 
   // Logo
   logoUrl: string | null;
+  logoRadius: [number, number, number, number]; // [tl, tr, br, bl] in percentages
   
   // Meta
   size: number;
@@ -78,6 +80,7 @@ export const DEFAULT_CONFIG: QRCodeConfig = {
   bgColor: '#ffffff',
   bgImage: null,
   bgOpacity: 1,
+  bgRadius: [0, 0, 0, 0],
 
   cornerSquareStyle: 'square',
   cornerDotStyle: 'square',
@@ -85,6 +88,7 @@ export const DEFAULT_CONFIG: QRCodeConfig = {
   errorCorrectionLevel: 'M',
 
   logoUrl: null,
+  logoRadius: [0, 0, 0, 0],
   
   size: 1000,
   fileExt: 'png'

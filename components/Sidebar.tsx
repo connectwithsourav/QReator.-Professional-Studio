@@ -16,6 +16,41 @@ interface Props {
   activeTab?: 'content' | 'design' | 'preview';
 }
 
+const RadiusControl = ({ label, value, onChange }: { label: string, value: [number, number, number, number], onChange: (val: [number, number, number, number]) => void }) => {
+    const updateIndex = (index: number, val: string) => {
+        const num = Math.max(0, Math.min(50, parseInt(val) || 0));
+        const newArr = [...value] as [number, number, number, number];
+        newArr[index] = num;
+        onChange(newArr);
+    };
+
+    return (
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+           <div className="flex justify-between items-center mb-3">
+               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{label} (0-50%)</span>
+           </div>
+           <div className="grid grid-cols-4 gap-2">
+               <div>
+                   <span className="text-[10px] text-slate-400 mb-1 block text-center">Top L</span>
+                   <input type="number" min="0" max="50" value={value[0]} onChange={(e) => updateIndex(0, e.target.value)} className="w-full text-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-brand-500 outline-none transition-all" />
+               </div>
+               <div>
+                   <span className="text-[10px] text-slate-400 mb-1 block text-center">Top R</span>
+                   <input type="number" min="0" max="50" value={value[1]} onChange={(e) => updateIndex(1, e.target.value)} className="w-full text-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-brand-500 outline-none transition-all" />
+               </div>
+               <div>
+                   <span className="text-[10px] text-slate-400 mb-1 block text-center">Bot R</span>
+                   <input type="number" min="0" max="50" value={value[2]} onChange={(e) => updateIndex(2, e.target.value)} className="w-full text-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-brand-500 outline-none transition-all" />
+               </div>
+               <div>
+                   <span className="text-[10px] text-slate-400 mb-1 block text-center">Bot L</span>
+                   <input type="number" min="0" max="50" value={value[3]} onChange={(e) => updateIndex(3, e.target.value)} className="w-full text-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-1 focus:ring-brand-500 outline-none transition-all" />
+               </div>
+           </div>
+        </div>
+    );
+};
+
 export default function Sidebar({ config, setConfig, activeTab = 'content' }: Props) {
   // Form states for complex types
   const [websiteState, setWebsiteState] = useState('https://example.com');
@@ -378,8 +413,8 @@ ${about}`;
     <div className="p-4 md:p-6 space-y-6 pb-24">
         
         {/* 1. Content Card */}
-        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'design' ? 'hidden md:block' : 'block'}`}>
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-visible transition-colors duration-200 ${activeTab === 'design' ? 'hidden md:block' : 'block'}`}>
+            <div className="rounded-t-2xl px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded-md"><Layers size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Content</h2>
             </div>
@@ -404,8 +439,8 @@ ${about}`;
         </section>
 
         {/* 2. Design Card */}
-        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-visible transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
+            <div className="rounded-t-2xl px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md"><Palette size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Design</h2>
             </div>
@@ -546,6 +581,11 @@ ${about}`;
                                      )}
                                 </div>
                             )}
+                            <RadiusControl 
+                                label="Background Border Radius" 
+                                value={config.bgRadius} 
+                                onChange={(val) => setConfig({...config, bgRadius: val})} 
+                            />
                         </div>
                     )}
                 </div>
@@ -618,8 +658,8 @@ ${about}`;
         </section>
 
         {/* 3. Logo Card */}
-        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
-             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-visible transition-colors duration-200 ${activeTab === 'content' ? 'hidden md:block' : 'block'}`}>
+             <div className="rounded-t-2xl px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                 <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 p-1 rounded-md"><ImageIcon size={14}/></div>
                 <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Logo</h2>
             </div>
@@ -648,6 +688,13 @@ ${about}`;
                             <X size={12} /> Remove
                         </button>
                     </div>
+                )}
+                {config.logoUrl && (
+                    <RadiusControl 
+                        label="Logo Border Radius" 
+                        value={config.logoRadius} 
+                        onChange={(val) => setConfig({...config, logoRadius: val})} 
+                    />
                 )}
             </div>
         </section>
